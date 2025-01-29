@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import NoteForm from "./components/NoteForm";
 import NoteCard from "./components/NoteCard";
-import SecureLogin from "./components/passwords/SecureLogin"; // New
+import SecureLogin from "./components/passwords/SecureLogin"; // Secure Login
+import About from "./pages/About"; // About Page
+import NotFound from "./pages/NotFound"; // 404 Page
 import { ref, onValue, push, update, remove } from "firebase/database";
 import { db } from "./firebase";
 
@@ -15,7 +18,7 @@ function App() {
   const [editingNote, setEditingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSearching, setIsSearching] = useState(false); // Hide forms when searching
+  const [isSearching, setIsSearching] = useState(false); // Hide form when searching
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -93,55 +96,128 @@ function App() {
     return <SecureLogin onAuthSuccess={() => setIsAuthenticated(true)} />;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <>
       <Navbar />
-      <div className="mt-16 max-w-4xl mx-auto px-4">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold text-center text-gray-800 mb-6"
-        >
-          Notes App
-        </motion.h1>
-
-        <SearchBar
-          notes={notes}
-          setFilteredNotes={setFilteredNotes}
-          setIsSearching={setIsSearching}
-        />
-
-        {error && (
-          <motion.div className="text-center text-red-500 mb-4">
-            {error}
-          </motion.div>
-        )}
-
-        <AnimatePresence>
-          {!isSearching && (
-            <NoteForm onSubmit={handleSubmit} initialNote={editingNote} />
-          )}
-        </AnimatePresence>
-
-        {loading ? (
-          <motion.div className="text-center text-gray-500 mt-8">
-            Loading notes...
-          </motion.div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2">
-            <AnimatePresence>
-              {filteredNotes.map((note) => (
-                <NoteCard
-                  key={note.id}
-                  note={note}
-                  onEdit={() => setEditingNote(note)}
-                  onDelete={() => handleDelete(note.id)}
+      <div className="mt-20 max-w-4xl mx-auto px-4">
+        {" "}
+        {/* Ensures content is below navbar */}
+        <Routes>
+          {/* 🏠 Home Page */}
+          <Route
+            path="/"
+            element={
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center"
+              >
+                <h1 className="text-3xl font-bold text-gray-800 mb-6">
+                  Notes App
+                </h1>
+                <SearchBar
+                  notes={notes}
+                  setFilteredNotes={setFilteredNotes}
+                  setIsSearching={setIsSearching}
                 />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
+
+                {error && (
+                  <motion.div className="text-red-500 mb-4">{error}</motion.div>
+                )}
+
+                {/* ✅ Hide NoteForm when searching */}
+                <AnimatePresence>
+                  {!isSearching && (
+                    <motion.div
+                      key="noteForm"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <NoteForm
+                        onSubmit={handleSubmit}
+                        initialNote={editingNote}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {loading ? (
+                  <motion.div className="text-gray-500 mt-8">
+                    Loading notes...
+                  </motion.div>
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <AnimatePresence>
+                      {filteredNotes.length > 0 ? (
+                        filteredNotes.map((note) => (
+                          <NoteCard
+                            key={note.id}
+                            note={note}
+                            onEdit={() => setEditingNote(note)}
+                            onDelete={() => handleDelete(note.id)}
+                          />
+                        ))
+                      ) : (
+                        <motion.p className="text-gray-500 mt-8">
+                          No notes found.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </motion.div>
+            }
+          />
+
+          {/* 📜 Notes Page */}
+          <Route
+            path="/notes"
+            element={
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center"
+              >
+                <h1 className="text-3xl font-bold text-gray-800 mb-6">
+                  Your Notes
+                </h1>
+                {loading ? (
+                  <motion.div className="text-gray-500 mt-8">
+                    Loading notes...
+                  </motion.div>
+                ) : (
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <AnimatePresence>
+                      {filteredNotes.length > 0 ? (
+                        filteredNotes.map((note) => (
+                          <NoteCard
+                            key={note.id}
+                            note={note}
+                            onEdit={() => setEditingNote(note)}
+                            onDelete={() => handleDelete(note.id)}
+                          />
+                        ))
+                      ) : (
+                        <motion.p className="text-gray-500 mt-8">
+                          No notes found.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </motion.div>
+            }
+          />
+
+          {/* ℹ️ About Page */}
+          <Route path="/about" element={<About />} />
+
+          {/* ❌ Page Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </div>
-    </div>
+    </>
   );
 }
 
