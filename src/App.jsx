@@ -4,18 +4,22 @@ import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import NoteForm from "./components/NoteForm";
 import NoteCard from "./components/NoteCard";
+import SecureLogin from "./components/passwords/SecureLogin"; // New
 import { ref, onValue, push, update, remove } from "firebase/database";
 import { db } from "./firebase";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
   const [editingNote, setEditingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSearching, setIsSearching] = useState(false); // Track search activity
+  const [isSearching, setIsSearching] = useState(false); // Hide forms when searching
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const notesRef = ref(db, "saved_notes");
 
     try {
@@ -49,7 +53,7 @@ function App() {
       setError("Something went wrong while fetching notes.");
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleSubmit = async (note) => {
     try {
@@ -85,6 +89,9 @@ function App() {
     }
   };
 
+  if (!isAuthenticated)
+    return <SecureLogin onAuthSuccess={() => setIsAuthenticated(true)} />;
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Navbar />
@@ -97,67 +104,39 @@ function App() {
           Notes App
         </motion.h1>
 
-        {/* 🔍 Optimized SearchBar */}
         <SearchBar
           notes={notes}
           setFilteredNotes={setFilteredNotes}
-          setIsSearching={setIsSearching} // Track search state
+          setIsSearching={setIsSearching}
         />
 
         {error && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-red-500 mb-4"
-          >
+          <motion.div className="text-center text-red-500 mb-4">
             {error}
           </motion.div>
         )}
 
-        {/* ✅ Hide NoteForm when searching */}
         <AnimatePresence>
           {!isSearching && (
-            <motion.div
-              key="noteForm"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-            >
-              <NoteForm onSubmit={handleSubmit} initialNote={editingNote} />
-            </motion.div>
+            <NoteForm onSubmit={handleSubmit} initialNote={editingNote} />
           )}
         </AnimatePresence>
 
         {loading ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center text-gray-500 mt-8"
-          >
+          <motion.div className="text-center text-gray-500 mt-8">
             Loading notes...
           </motion.div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             <AnimatePresence>
-              {filteredNotes.length > 0 ? (
-                filteredNotes.map((note) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onEdit={() => setEditingNote(note)}
-                    onDelete={() => handleDelete(note.id)}
-                  />
-                ))
-              ) : (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center text-gray-500 mt-8"
-                >
-                  No notes found.
-                </motion.p>
-              )}
+              {filteredNotes.map((note) => (
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  onEdit={() => setEditingNote(note)}
+                  onDelete={() => handleDelete(note.id)}
+                />
+              ))}
             </AnimatePresence>
           </div>
         )}
