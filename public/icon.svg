@@ -1,0 +1,65 @@
+<svg
+  width="100"
+  height="100"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Notebook Background -->
+  <rect
+    x="4"
+    y="3"
+    width="16"
+    height="18"
+    rx="2"
+    ry="2"
+    fill="#4F46E5"
+    stroke="#3B82F6"
+    stroke-width="2"
+  >
+    <animate
+      attributeName="fill"
+      values="#4F46E5;#6366F1;#4F46E5"
+      dur="3s"
+      repeatCount="indefinite"
+    />
+  </rect>
+
+  <!-- Notebook Rings -->
+  <circle cx="6" cy="6" r="1" fill="white" />
+  <circle cx="6" cy="10" r="1" fill="white" />
+  <circle cx="6" cy="14" r="1" fill="white" />
+  <circle cx="6" cy="18" r="1" fill="white" />
+
+  <!-- Pencil -->
+  <path
+    d="M12 17l5-5-3-3-5 5v3h3z"
+    fill="#F59E0B"
+    stroke="black"
+    stroke-width="1"
+  >
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      values="0 14 12; -10 14 12; 0 14 12"
+      dur="1.5s"
+      repeatCount="indefinite"
+    />
+  </path>
+
+  <!-- Pencil Tip -->
+  <circle cx="16" cy="9" r="1" fill="black" />
+
+  <!-- Animated Sparkle -->
+  <polygon
+    points="18,3 19,5 21,5 19.5,6.5 20,8 18,7 16,8 16.5,6.5 15,5 17,5"
+    fill="gold"
+  >
+    <animate
+      attributeName="opacity"
+      values="1;0.3;1"
+      dur="1.5s"
+      repeatCount="indefinite"
+    />
+  </polygon>
+</svg>
