@@ -1,13 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+
+    <!-- ✅ Improved SEO -->
+    <title>Notes App - Organize Your Ideas</title>
+    <meta
+      name="description"
+      content="A simple and fast Notes App built with Vite, React, Firebase, and Tailwind CSS."
+    />
+    <meta
+      name="keywords"
+      content="Notes, Vite, React, Firebase, Tailwind, Productivity, Organizer"
+    />
+    <meta name="author" content="Vaibhav" />
+
+    <!-- ✅ Open Graph (OG) for Social Media Sharing -->
+    <meta property="og:title" content="Notes App - Organize Your Ideas" />
+    <meta
+      property="og:description"
+      content="A fast, modern, and responsive note-taking app."
+    />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:url" content="https://vaibhav.vercel.app/" />
+    <meta property="og:type" content="website" />
+
+    <!-- ✅ Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- ✅ Manifest for PWA Support -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ✅ Preload Main Styles -->
+    <link rel="preload" as="style" href="/src/index.css" />
+
+    <!-- ✅ Preload JavaScript for Faster Loading -->
+    <link rel="preload" as="script" href="/src/main.jsx" />
   </head>
-  <body>
+
+  <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
+
+    <!-- ✅ Load Main React App -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
