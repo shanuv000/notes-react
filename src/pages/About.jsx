@@ -27,7 +27,7 @@ export default function About() {
       </p>
       <p className="mt-6 text-gray-600">
         Made with ❤️ by{" "}
-        <span className="font-semibold text-blue-600">Your Name</span>
+        <span className="font-semibold text-blue-600">Vaibhav K</span>
       </p>
     </motion.div>
   );
