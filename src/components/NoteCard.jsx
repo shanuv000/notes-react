@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { TrashIcon, PencilIcon } from "@heroicons/react/24/outline";
+import {
+  TrashIcon,
+  PencilIcon,
+  ClipboardIcon,
+  CheckIcon,
+} from "@heroicons/react/24/outline";
 
 // Function to check if text is a URL
 const isValidURL = (text) => {
@@ -17,6 +23,8 @@ const isValidURL = (text) => {
 };
 
 export default function NoteCard({ note, onEdit, onDelete }) {
+  const [copied, setCopied] = useState(false);
+
   if (!note || !note.id) {
     return (
       <motion.div
@@ -30,6 +38,12 @@ export default function NoteCard({ note, onEdit, onDelete }) {
       </motion.div>
     );
   }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(note.text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
+  };
 
   return (
     <motion.div
@@ -61,7 +75,7 @@ export default function NoteCard({ note, onEdit, onDelete }) {
       </div>
 
       {/* Note Content (Check for URL) */}
-      <div className="text-gray-600 mb-4 break-words w-full">
+      <div className="text-gray-600 mb-4 break-words w-full flex justify-between items-center">
         {note.text ? (
           isValidURL(note.text) ? (
             <a
@@ -73,11 +87,23 @@ export default function NoteCard({ note, onEdit, onDelete }) {
               {note.text}
             </a>
           ) : (
-            note.text
+            <span className="break-words">{note.text}</span>
           )
         ) : (
           "No content available"
         )}
+
+        {/* Copy Icon Button */}
+        <button
+          onClick={handleCopy}
+          className="ml-2 p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-gray-100"
+        >
+          {copied ? (
+            <CheckIcon className="w-5 h-5 text-green-500" />
+          ) : (
+            <ClipboardIcon className="w-5 h-5" />
+          )}
+        </button>
       </div>
 
       {/* Timestamp */}
