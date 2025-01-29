@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
+import { motion, AnimatePresence } from "framer-motion"; // ✅ Correct Import
 import SearchBar from "../components/SearchBar";
 import NoteForm from "../components/NoteForm";
 import NoteCard from "../components/NoteCard";
@@ -13,7 +12,7 @@ export default function NotesPage() {
   const [editingNote, setEditingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isSearching, setIsSearching] = useState(false); // Hide form when searching
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     const notesRef = ref(db, "saved_notes");
@@ -89,9 +88,11 @@ export default function NotesPage() {
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="text-center"
+      className="text-center px-4 sm:px-6"
     >
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Notes App</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+        Notes App
+      </h1>
 
       <SearchBar
         notes={notes}
@@ -119,7 +120,7 @@ export default function NotesPage() {
       {loading ? (
         <motion.div className="text-gray-500 mt-8">Loading notes...</motion.div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
           <AnimatePresence>
             {filteredNotes.length > 0 ? (
               filteredNotes.map((note) => (
