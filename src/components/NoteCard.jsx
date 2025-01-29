@@ -55,9 +55,16 @@ export default function NoteCard({ note, onEdit, onDelete }) {
     >
       {/* Title and Buttons */}
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 break-words w-4/5">
-          {note.title || "Untitled"}
+        {/* ✅ Truncated Title */}
+        <h3
+          className="text-lg font-semibold text-gray-800 truncate w-4/5"
+          title={note.title}
+        >
+          {note.title.length > 50
+            ? note.title.slice(0, 50) + "..."
+            : note.title || "Untitled"}
         </h3>
+
         <div className="flex space-x-2">
           <button
             onClick={() => onEdit(note)}
@@ -74,8 +81,8 @@ export default function NoteCard({ note, onEdit, onDelete }) {
         </div>
       </div>
 
-      {/* Note Content (Check for URL) */}
-      <div className="text-gray-600 mb-4 break-words w-full flex justify-between items-center">
+      {/* ✅ Truncated Note Content (Check for URL) */}
+      <div className="text-gray-600 mb-4 w-full flex justify-between items-center">
         {note.text ? (
           isValidURL(note.text) ? (
             <a
@@ -87,7 +94,11 @@ export default function NoteCard({ note, onEdit, onDelete }) {
               {note.text}
             </a>
           ) : (
-            <span className="break-words">{note.text}</span>
+            <p className="truncate w-full" title={note.text}>
+              {note.text.length > 500
+                ? note.text.slice(0, 500) + "..."
+                : note.text}
+            </p>
           )
         ) : (
           "No content available"
