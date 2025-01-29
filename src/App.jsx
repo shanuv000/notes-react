@@ -1,22 +1,19 @@
-import { Routes, Route } from "react-router-dom";
-import UnderConstruction from "./pages/UnderConstruction";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./components/Navbar";
 import SearchBar from "./components/SearchBar";
 import NoteForm from "./components/NoteForm";
 import NoteCard from "./components/NoteCard";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound"; // Handle invalid routes
 import { ref, onValue, push, update, remove } from "firebase/database";
 import { db } from "./firebase";
 
 function App() {
   const [notes, setNotes] = useState([]);
+  const [filteredNotes, setFilteredNotes] = useState([]);
   const [editingNote, setEditingNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false); // Track search activity
 
   useEffect(() => {
     const notesRef = ref(db, "saved_notes");
@@ -32,8 +29,10 @@ function App() {
               ...note,
             }));
             setNotes(notesList.sort((a, b) => b.timestamp - a.timestamp));
+            setFilteredNotes(notesList);
           } else {
             setNotes([]);
+            setFilteredNotes([]);
           }
           setLoading(false);
         },
@@ -51,13 +50,6 @@ function App() {
       setLoading(false);
     }
   }, []);
-
-  // 🔍 Filter notes based on search query
-  const filteredNotes = notes.filter(
-    (note) =>
-      (note.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      (note.text?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-  );
 
   const handleSubmit = async (note) => {
     try {
@@ -94,98 +86,83 @@ function App() {
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 py-8">
       <Navbar />
       <div className="mt-16 max-w-4xl mx-auto px-4">
-        <AnimatePresence mode="wait">
-          <Routes>
-            {/* ✅ Home Page */}
-            <Route
-              path="/"
-              element={
-                <motion.div
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-bold text-center text-gray-800 mb-6"
+        >
+          Notes App
+        </motion.h1>
+
+        {/* 🔍 Optimized SearchBar */}
+        <SearchBar
+          notes={notes}
+          setFilteredNotes={setFilteredNotes}
+          setIsSearching={setIsSearching} // Track search state
+        />
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-red-500 mb-4"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {/* ✅ Hide NoteForm when searching */}
+        <AnimatePresence>
+          {!isSearching && (
+            <motion.div
+              key="noteForm"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <NoteForm onSubmit={handleSubmit} initialNote={editingNote} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-gray-500 mt-8"
+          >
+            Loading notes...
+          </motion.div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            <AnimatePresence>
+              {filteredNotes.length > 0 ? (
+                filteredNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onEdit={() => setEditingNote(note)}
+                    onDelete={() => handleDelete(note.id)}
+                  />
+                ))
+              ) : (
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  className="text-center text-gray-500 mt-8"
                 >
-                  <motion.h1
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-3xl font-bold text-center text-gray-800 mb-6"
-                  >
-                    Notes App
-                  </motion.h1>
-
-                  {/* 🔍 Search Bar */}
-                  <SearchBar
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                  />
-
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-center text-red-500 mb-4"
-                    >
-                      {error}
-                    </motion.div>
-                  )}
-
-                  {/* Hide NoteForm when typing in search */}
-                  {!searchQuery && (
-                    <NoteForm
-                      onSubmit={handleSubmit}
-                      initialNote={editingNote}
-                    />
-                  )}
-
-                  {loading ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-center text-gray-500 mt-8"
-                    >
-                      Loading notes...
-                    </motion.div>
-                  ) : (
-                    <div className="grid gap-6 md:grid-cols-2">
-                      <AnimatePresence>
-                        {filteredNotes.length > 0 ? (
-                          filteredNotes.map((note) => (
-                            <NoteCard
-                              key={note.id}
-                              note={note}
-                              onEdit={() => setEditingNote(note)}
-                              onDelete={() => handleDelete(note.id)}
-                            />
-                          ))
-                        ) : (
-                          <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="text-center text-gray-500 mt-8"
-                          >
-                            No notes found.
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                </motion.div>
-              }
-            />
-
-            {/* ✅ About Page */}
-            <Route path="/about" element={<About />} />
-
-            {/* ✅ 404 Not Found Page */}
-            <Route path="*" element={<NotFound />} />
-            <Route path="/notes" element={<UnderConstruction />} />
-          </Routes>
-        </AnimatePresence>
+                  No notes found.
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
