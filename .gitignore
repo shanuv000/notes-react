@@ -12,7 +12,7 @@ dist/
 .vite/
 .vitepress/cache/
 *.log
-.bolt
+.bolt/
 
 # IDE & OS-specific files
 .DS_Store
