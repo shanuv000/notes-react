@@ -1,132 +1,191 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { BsX, BsPlus, BsPinAngle } from "react-icons/bs";
 
 export default function NoteForm({ onSubmit, initialNote = null }) {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [tags, setTags] = useState([]);
+  const [currentTag, setCurrentTag] = useState("");
+  const [category, setCategory] = useState("");
   const [color, setColor] = useState("#ffffff");
   const [isPinned, setIsPinned] = useState(false);
-  const [reminderDate, setReminderDate] = useState(null);
+  const [reminderDate, setReminderDate] = useState("");
 
   useEffect(() => {
     if (initialNote) {
-      setTitle(initialNote.title);
-      setText(initialNote.text);
+      setTitle(initialNote.title || "");
+      setText(initialNote.text || "");
       setTags(initialNote.tags || []);
+      setCategory(initialNote.category || "");
       setColor(initialNote.color || "#ffffff");
       setIsPinned(initialNote.isPinned || false);
-      setReminderDate(initialNote.reminderDate || null);
+      setReminderDate(initialNote.reminderDate || "");
     }
   }, [initialNote]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!text.trim() && !title.trim()) return;
+
     onSubmit({
-      id: initialNote?.id || Date.now().toString(16),
-      title,
-      text,
-      timestamp: Date.now(),
+      id: initialNote?.id,
+      title: title.trim(),
+      text: text.trim(),
       tags,
+      category,
       color,
       isPinned,
       reminderDate,
+      timestamp: Date.now(),
     });
-    setTitle("");
-    setText("");
-    setTags([]);
-    setColor("#ffffff");
-    setIsPinned(false);
-    setReminderDate(null);
+
+    // Clear form if it's a new note
+    if (!initialNote) {
+      setTitle("");
+      setText("");
+      setTags([]);
+      setCategory("");
+      setColor("#ffffff");
+      setIsPinned(false);
+      setReminderDate("");
+    }
   };
+
+  const handleAddTag = (e) => {
+    e.preventDefault();
+    if (currentTag.trim() && !tags.includes(currentTag.trim())) {
+      setTags([...tags, currentTag.trim()]);
+      setCurrentTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const categories = [
+    "Personal",
+    "Work",
+    "Study",
+    "Shopping",
+    "Ideas",
+    "Other",
+  ];
 
   return (
     <motion.form
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white p-6 rounded-lg shadow-md mb-6"
+      exit={{ opacity: 0, y: -20 }}
       onSubmit={handleSubmit}
+      className="bg-white rounded-lg shadow-md p-6 mb-8"
+      style={{ backgroundColor: color }}
     >
       <div className="mb-4">
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Title
-        </label>
         <input
           type="text"
-          id="title"
+          placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          required
+          className="w-full px-3 py-2 border rounded-md bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
       <div className="mb-4">
-        <label
-          htmlFor="text"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          Content
-        </label>
         <textarea
-          id="text"
+          placeholder="Take a note..."
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           rows="4"
-          required
+          className="w-full px-3 py-2 border rounded-md bg-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
+
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Tags
-        </label>
-        <input
-          type="text"
-          placeholder="Add tags (comma separated)"
-          onChange={(e) =>
-            setTags(e.target.value.split(",").map((tag) => tag.trim()))
-          }
-          className="w-full px-3 py-2 border rounded-md"
-        />
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            placeholder="Add tag"
+            value={currentTag}
+            onChange={(e) => setCurrentTag(e.target.value)}
+            className="flex-1 px-3 py-2 border rounded-md bg-white/50"
+          />
+          <button
+            onClick={handleAddTag}
+            className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          >
+            <BsPlus className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag, index) => (
+            <span
+              key={index}
+              className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center gap-1"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                className="hover:text-red-500"
+              >
+                <BsX className="w-4 h-4" />
+              </button>
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Note Color
-        </label>
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-          className="w-full h-10 rounded-md"
-        />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md bg-white/50"
+          >
+            <option value="">Select Category</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <input
+            type="datetime-local"
+            value={reminderDate}
+            onChange={(e) => setReminderDate(e.target.value)}
+            className="w-full px-3 py-2 border rounded-md bg-white/50"
+          />
+        </div>
       </div>
-      <div className="mb-4 flex items-center">
-        <input
-          type="checkbox"
-          checked={isPinned}
-          onChange={(e) => setIsPinned(e.target.checked)}
-          className="mr-2"
-        />
-        <label className="text-sm font-medium text-gray-700">
-          Pin this note
-        </label>
+
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            className="w-8 h-8 rounded-md"
+          />
+          <span className="text-sm text-gray-600">Note Color</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isPinned}
+            onChange={(e) => setIsPinned(e.target.checked)}
+            className="w-4 h-4"
+          />
+          <span className="text-sm text-gray-600">Pin Note</span>
+        </div>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Set Reminder
-        </label>
-        <input
-          type="datetime-local"
-          onChange={(e) => setReminderDate(e.target.value)}
-          className="w-full px-3 py-2 border rounded-md"
-        />
-      </div>
+
       <button
         type="submit"
-        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
       >
         {initialNote ? "Update Note" : "Add Note"}
       </button>
