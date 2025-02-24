@@ -5,12 +5,17 @@ import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function SearchBar({ notes, setFilteredNotes, setIsSearching }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchBy, setSearchBy] = useState("all"); // title, content, tags
 
-  // Initialize Fuse.js for fuzzy searching
   const fuse = new Fuse(notes, {
-    keys: ["title", "text"], // Fields to search within
-    threshold: 0.3, // Sensitivity of search (lower = stricter matches)
-    includeScore: true, // Show score of matches
+    keys: [
+      { name: "title", weight: 0.4 },
+      { name: "text", weight: 0.3 },
+      { name: "tags", weight: 0.2 },
+      { name: "category", weight: 0.1 },
+    ],
+    threshold: 0.3,
+    includeScore: true,
   });
 
   useEffect(() => {
@@ -28,32 +33,24 @@ export default function SearchBar({ notes, setFilteredNotes, setIsSearching }) {
   }, [searchQuery, notes]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative mb-6 flex items-center w-full"
-    >
-      {/* Search Icon */}
-      <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 text-gray-400" />
-
-      {/* Input Field */}
+    <div className="flex gap-2 mb-6">
       <input
         type="text"
         placeholder="Search notes..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+        className="flex-1 pl-10 pr-12 py-2 border rounded-md"
       />
-
-      {/* Clear Button */}
-      {searchQuery && (
-        <button
-          onClick={() => setSearchQuery("")}
-          className="absolute right-3 text-gray-500 hover:text-red-500 transition-all"
-        >
-          <XMarkIcon className="w-5 h-5" />
-        </button>
-      )}
-    </motion.div>
+      <select
+        value={searchBy}
+        onChange={(e) => setSearchBy(e.target.value)}
+        className="px-4 py-2 border rounded-md"
+      >
+        <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="content">Content</option>
+        <option value="tags">Tags</option>
+      </select>
+    </div>
   );
 }

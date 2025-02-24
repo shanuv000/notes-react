@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   let lastScrollY = window.scrollY;
 
   useEffect(() => {
@@ -22,10 +25,20 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Notes", href: "/notes" },
     { name: "About", href: "/about" },
+    { name: "Settings", href: "/settings" },
   ];
 
   return (
@@ -45,7 +58,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex space-x-6">
+            <div className="hidden md:flex items-center space-x-6">
               {navLinks.map((link, index) => (
                 <motion.div
                   key={index}
@@ -60,6 +73,16 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               ))}
+              {user && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                  onClick={handleLogout}
+                  className="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors"
+                >
+                  Logout
+                </motion.button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -97,6 +120,17 @@ export default function Navbar() {
                     {link.name}
                   </Link>
                 ))}
+                {user && (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                    className="text-red-600 hover:text-red-700 text-lg transition-all text-left"
+                  >
+                    Logout
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
